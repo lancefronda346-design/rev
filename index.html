@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MESL Revalida Reviewer</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    .container {
+      max-width: 950px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .box {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #1d4ed8;
+    }
+
+    .subtitle {
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .left-tools,
+    .right-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button,
+    select {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+
+    button {
+      border: none;
+      background: #1d4ed8;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #1e40af;
+    }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #111;
+    }
+
+    button.secondary:hover {
+      background: #d1d5db;
+    }
+
+    button.green {
+      background: #16a34a;
+    }
+
+    button.green:hover {
+      background: #15803d;
+    }
+
+    button.red {
+      background: #dc2626;
+    }
+
+    button.red:hover {
+      background: #b91c1c;
+    }
+
+    .active-mode {
+      background: #0ea5e9 !important;
+    }
+
+    .card {
+      border: 2px dashed #93c5fd;
+      border-radius: 16px;
+      padding: 30px 20px;
+      min-height: 220px;
+      background: #f8fbff;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .topic {
+      color: #0369a1;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+
+    .label {
+      color: #666;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .main-text {
+      font-size: 24px;
+      line-height: 1.5;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 15px;
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 10px;
+      color: #666;
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .question-box {
+      border: 2px dashed #93c5fd;
+      border-radius: 16px;
+      background: #f8fbff;
+      padding: 20px;
+    }
+
+    .quiz-meta {
+      color: #666;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .question-text {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .option {
+      background: white;
+      color: #222;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .option:hover {
+      background: #eff6ff;
+    }
+
+    .option.selected {
+      border: 2px solid #38bdf8;
+      background: #e0f2fe;
+    }
+
+    .option.correct {
+      background: #dcfce7;
+      border: 2px solid #22c55e;
+    }
+
+    .option.wrong {
+      background: #fee2e2;
+      border: 2px solid #ef4444;
+    }
+
+    .result {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result.ok {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .result.no {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .summary {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #eff6ff;
+      border: 1px solid #93c5fd;
+      display: none;
+    }
+
+    .summary.show {
+      display: block;
+    }
+
+    @media (max-width: 700px) {
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .left-tools,
+      .right-tools {
+        width: 100%;
+      }
+
+      .left-tools > *,
+      .right-tools > * {
+        width: 100%;
+      }
+
+      .main-text {
+        font-size: 20px;
+      }
+
+      .question-text {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="box">
+      <h1>MESL Revalida Reviewer</h1>
+      <p class="subtitle">
+        Flashcards and quiz reviewer for Engineering Economics, Physics and Mechanics,
+        Fluid Mechanics, Spring, Pressure Vessel, and Spur Gear.
+      </p>
+    </div>
+
+    <div class="box toolbar">
+      <div class="left-tools">
+        <button id="flashModeBtn" class="active-mode">Flashcards</button>
+        <button id="quizModeBtn" class="secondary">Quiz</button>
+      </div>
+
+      <div class="right-tools">
+        <label for="topicSelect"><strong>Topic:</strong></label>
+        <select id="topicSelect"></select>
+
+        <label for="quizCount"><strong>Quiz Items:</strong></label>
+        <select id="quizCount">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="30">30</option>
+          <option value="999">All Available</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="flashPanel" class="box">
+      <div class="card">
+        <div class="topic" id="flashTopic">Topic</div>
+        <div class="label" id="flashLabel">QUESTION</div>
+        <div class="main-text" id="flashText">Loading...</div>
+      </div>
+
+      <div class="controls">
+        <button class="secondary" id="prevBtn">Previous</button>
+        <button id="flipBtn">Show Answer</button>
+        <button class="secondary" id="nextBtn">Next</button>
+        <button class="green" id="shuffleBtn">Shuffle</button>
+        <button class="red" id="resetBtn">Reset</button>
+      </div>
+
+      <div class="status" id="flashStatus">Card 1 of 1</div>
+    </div>
+
+    <div id="quizPanel" class="box hidden">
+      <div class="question-box">
+        <div class="topic" id="quizTopic">Topic</div>
+        <div class="quiz-meta" id="quizMeta">Press Start Quiz.</div>
+        <div class="question-text" id="quizQuestion">Your question will appear here.</div>
+        <div class="options" id="quizOptions"></div>
+        <div class="result" id="quizResult"></div>
+        <div class="summary" id="quizSummary"></div>
+      </div>
+
+      <div class="controls">
+        <button class="green" id="startQuizBtn">Start Quiz</button>
+        <button id="submitBtn">Submit Answer</button>
+        <button class="secondary" id="nextQuestionBtn">Next Question</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var cards = [
+      { topic: "Engineering Economics", q: "What is engineering economics?", a: "It is the application of economic principles to evaluate engineering alternatives and choose the most cost-effective option." },
+      { topic: "Engineering Economics", q: "What is simple interest?", a: "Interest computed only on the original principal. Formula: I = P r t" },
+      { topic: "Engineering Economics", q: "What is compound interest?", a: "Interest computed on the principal and previously earned interest. Formula: F = P(1 + i)^n" },
+      { topic: "Engineering Economics", q: "What is present worth?", a: "The current value of a future amount of money. Formula: P = F / (1 + i)^n" },
+      { topic: "Engineering Economics", q: "What is future worth?", a: "The value of money at a future time after earning interest." },
+      { topic: "Engineering Economics", q: "What is annual worth?", a: "The equivalent uniform annual value of a cash flow series." },
+      { topic: "Engineering Economics", q: "What is depreciation?", a: "The decrease in value of an asset due to wear, age, use, or obsolescence." },
+      { topic: "Engineering Economics", q: "What is straight-line depreciation?", a: "A method in which equal depreciation is charged every year. Formula: (First Cost - Salvage Value) / Life" },
+      { topic: "Engineering Economics", q: "What is break-even point?", a: "The production or sales level where total revenue equals total cost." },
+      { topic: "Engineering Economics", q: "What is rate of return?", a: "The interest rate at which the present worth of benefits equals the present worth of costs." },
+
+      { topic: "Physics and Mechanics", q: "What is Newton's First Law?", a: "A body remains at rest or in uniform motion unless acted upon by a net external force." },
+      { topic: "Physics and Mechanics", q: "What is Newton's Second Law?", a: "Force equals mass times acceleration. Formula: F = m a" },
+      { topic: "Physics and Mechanics", q: "What is Newton's Third Law?", a: "For every action, there is an equal and opposite reaction." },
+      { topic: "Physics and Mechanics", q: "What is work?", a: "Work is done when a force moves an object through a distance. Formula: W = F d" },
+      { topic: "Physics and Mechanics", q: "What is power?", a: "The rate of doing work. Formula: P = W / t" },
+      { topic: "Physics and Mechanics", q: "What is torque?", a: "The turning effect of a force about an axis. Formula: T = F r" },
+      { topic: "Physics and Mechanics", q: "What is equilibrium?", a: "A body is in equilibrium when the sum of forces and the sum of moments are both zero." },
+      { topic: "Physics and Mechanics", q: "What is stress?", a: "Internal resisting force per unit area. Formula: stress = F / A" },
+      { topic: "Physics and Mechanics", q: "What is strain?", a: "Deformation per unit original length. Formula: strain = delta L / L" },
+      { topic: "Physics and Mechanics", q: "What is friction?", a: "The resisting force between contacting surfaces. Formula: Ff = mu N" },
+
+      { topic: "Fluid Mechanics", q: "What is density?", a: "Mass per unit volume. Formula: rho = m / V" },
+      { topic: "Fluid Mechanics", q: "What is specific gravity?", a: "The ratio of the density of a substance to the density of water." },
+      { topic: "Fluid Mechanics", q: "What is pressure?", a: "Force per unit area. Formula: P = F / A" },
+      { topic: "Fluid Mechanics", q: "What is hydrostatic pressure?", a: "Pressure due to a fluid at rest. Formula: P = rho g h" },
+      { topic: "Fluid Mechanics", q: "What is Pascal's law?", a: "Pressure applied to a confined fluid is transmitted equally in all directions." },
+      { topic: "Fluid Mechanics", q: "What is Bernoulli's equation?", a: "It expresses conservation of energy in fluid flow." },
+      { topic: "Fluid Mechanics", q: "What is the continuity equation?", a: "It expresses conservation of mass in fluid flow. Formula: A1V1 = A2V2 for incompressible flow" },
+      { topic: "Fluid Mechanics", q: "What is buoyant force?", a: "The upward force exerted by a fluid on an immersed object, equal to the weight of displaced fluid." },
+      { topic: "Fluid Mechanics", q: "What is viscosity?", a: "A fluid's resistance to flow." },
+      { topic: "Fluid Mechanics", q: "What is Reynolds number?", a: "A dimensionless number used to predict whether flow is laminar or turbulent." },
+
+      { topic: "Spring", q: "What is a spring?", a: "An elastic machine element that deflects under load and returns to its original shape within the elastic limit." },
+      { topic: "Spring", q: "What is Hooke's law?", a: "Within the elastic limit, force is proportional to deflection. Formula: F = k x" },
+      { topic: "Spring", q: "What is spring constant?", a: "The measure of spring stiffness. Symbol: k" },
+      { topic: "Spring", q: "What is spring deflection?", a: "The amount a spring stretches or compresses under load." },
+      { topic: "Spring", q: "What is elastic limit?", a: "The maximum deformation a spring can undergo and still return to its original shape." },
+      { topic: "Spring", q: "What is strain energy in a spring?", a: "The energy stored in a spring due to deformation. Formula: U = 1/2 k x^2" },
+      { topic: "Spring", q: "What is the equivalent stiffness of springs in series?", a: "1 / keq = 1/k1 + 1/k2 + ..." },
+      { topic: "Spring", q: "What is the equivalent stiffness of springs in parallel?", a: "keq = k1 + k2 + ..." },
+      { topic: "Spring", q: "What is a helical spring?", a: "A spring made of wire coiled in a helix." },
+      { topic: "Spring", q: "What is spring index?", a: "The ratio of mean coil diameter to wire diameter. Formula: C = D / d" },
+
+      { topic: "Pressure Vessel", q: "What is a pressure vessel?", a: "A closed container designed to hold fluids at a pressure different from atmospheric pressure." },
+      { topic: "Pressure Vessel", q: "What is a thin-walled pressure vessel?", a: "A vessel whose wall thickness is small compared with its diameter, so stress is assumed uniform through the thickness." },
+      { topic: "Pressure Vessel", q: "What is internal pressure?", a: "Pressure exerted by the fluid inside the vessel on its walls." },
+      { topic: "Pressure Vessel", q: "What is hoop stress?", a: "Circumferential stress in a thin cylindrical pressure vessel. Formula: sigma_h = P r / t" },
+      { topic: "Pressure Vessel", q: "What is longitudinal stress?", a: "Stress acting along the length of a cylindrical vessel. Formula: sigma_l = P r / 2t" },
+      { topic: "Pressure Vessel", q: "Which is larger in a thin cylinder: hoop stress or longitudinal stress?", a: "Hoop stress is twice the longitudinal stress." },
+      { topic: "Pressure Vessel", q: "Why is a spherical vessel more efficient than a cylindrical vessel?", a: "Because stress is distributed more uniformly, so less material is needed for the same pressure." },
+      { topic: "Pressure Vessel", q: "Why is factor of safety important in pressure vessels?", a: "It helps prevent failure due to yielding, bursting, or fatigue." },
+      { topic: "Pressure Vessel", q: "What are common pressure vessel shapes?", a: "Cylindrical and spherical." },
+      { topic: "Pressure Vessel", q: "What is a pressure relief valve?", a: "A safety device that releases excess pressure to protect the vessel from overpressure." },
+
+      { topic: "Spur Gear", q: "What is a spur gear?", a: "A gear with straight teeth parallel to the shaft axis, used for motion and power transmission between parallel shafts." },
+      { topic: "Spur Gear", q: "What is the pitch circle?", a: "The imaginary circle on which mating gears are assumed to roll without slipping." },
+      { topic: "Spur Gear", q: "What is pitch diameter?", a: "The diameter of the pitch circle." },
+      { topic: "Spur Gear", q: "What is module?", a: "A metric measure of tooth size. Formula: m = D / N" },
+      { topic: "Spur Gear", q: "What is diametral pitch?", a: "The number of teeth per unit pitch diameter. Formula: Pd = N / D" },
+      { topic: "Spur Gear", q: "What is gear ratio?", a: "The ratio of teeth or speed between driven and driver gears." },
+      { topic: "Spur Gear", q: "What is circular pitch?", a: "The distance along the pitch circle from one tooth to the corresponding point on the next tooth." },
+      { topic: "Spur Gear", q: "What is addendum?", a: "The radial distance from the pitch circle to the top of the tooth." },
+      { topic: "Spur Gear", q: "What is dedendum?", a: "The radial distance from the pitch circle to the root of the tooth." },
+      { topic: "Spur Gear", q: "What is backlash?", a: "The small clearance between mating gear teeth." },
+      { topic: "Spur Gear", q: "What is pressure angle?", a: "The angle between the line of action and the common tangent to the pitch circles." }
+    ];
+
+    var topicSelect = document.getElementById("topicSelect");
+    var quizCount = document.getElementById("quizCount");
+
+    var flashModeBtn = document.getElementById("flashModeBtn");
+    var quizModeBtn = document.getElementById("quizModeBtn");
+    var flashPanel = document.getElementById("flashPanel");
+    var quizPanel = document.getElementById("quizPanel");
+
+    var flashTopic = document.getElementById("flashTopic");
+    var flashLabel = document.getElementById("flashLabel");
+    var flashText = document.getElementById("flashText");
+    var flashStatus = document.getElementById("flashStatus");
+    var flipBtn = document.getElementById("flipBtn");
+
+    var quizTopic = document.getElementById("quizTopic");
+    var quizMeta = document.getElementById("quizMeta");
+    var quizQuestion = document.getElementById("quizQuestion");
+    var quizOptions = document.getElementById("quizOptions");
+    var quizResult = document.getElementById("quizResult");
+    var quizSummary = document.getElementById("quizSummary");
+
+    var filteredCards = [];
+    var originalCards = [];
+    var flashIndex = 0;
+    var showingAnswer = false;
+
+    var quizDeck = [];
+    var quizIndex = 0;
+    var selectedAnswer = null;
+    var answered = false;
+    var score = 0;
+
+    function shuffleArray(arr) {
+      var a = arr.slice();
+      var i;
+      var j;
+      var temp;
+      for (i = a.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        temp = a[i];
+        a[i] = a[j];
+        a[j] = temp;
+      }
+      return a;
+    }
+
+    function uniqueArray(arr) {
+      var seen = {};
+      var out = [];
+      var i;
+      for (i = 0; i < arr.length; i++) {
+        if (!seen[arr[i]]) {
+          seen[arr[i]] = true;
+          out.push(arr[i]);
+        }
+      }
+      return out;
+    }
+
+    function initTopics() {
+      var topics = ["All Topics"];
+      var i;
+      var found = {};
+
+      for (i = 0; i < cards.length; i++) {
+        if (!found[cards[i].topic]) {
+          found[cards[i].topic] = true;
+          topics.push(cards[i].topic);
+        }
+      }
+
+      topicSelect.innerHTML = "";
+      for (i = 0; i < topics.length; i++) {
+        var option = document.createElement("option");
+        option.value = topics[i];
+        option.textContent = topics[i];
+        topicSelect.appendChild(option);
+      }
+    }
+
+    function applyFilter() {
+      var topic = topicSelect.value;
+      var i;
+
+      filteredCards = [];
+      for (i = 0; i < cards.length; i++) {
+        if (topic === "All Topics" || cards[i].topic === topic) {
+          filteredCards.push(cards[i]);
+        }
+      }
+
+      originalCards = filteredCards.slice();
+      flashIndex = 0;
+      showingAnswer = false;
+      renderFlashcard();
+      resetQuiz();
+    }
+
+    function renderFlashcard() {
+      if (filteredCards.length === 0) {
+        flashTopic.textContent = "No Topic";
+        flashLabel.textContent = "INFO";
+        flashText.textContent = "No cards available.";
+        flashStatus.textContent = "Card 0 of 0";
+        return;
+      }
+
+      var card = filteredCards[flashIndex];
+      flashTopic.textContent = card.topic;
+      flashLabel.textContent = showingAnswer ? "ANSWER" : "QUESTION";
+      flashText.textContent = showingAnswer ? card.a : card.q;
+      flashStatus.textContent = "Card " + (flashIndex + 1) + " of " + filteredCards.length;
+      flipBtn.textContent = showingAnswer ? "Show Question" : "Show Answer";
+    }
+
+    function prevCard() {
+      if (filteredCards.length === 0) return;
+      flashIndex = (flashIndex - 1 + filteredCards.length) % filteredCards.length;
+      showingAnswer = false;
+      renderFlashcard();
+    }
+
+    function nextCard() {
+      if (filteredCards.length === 0) return;
+      flashIndex = (flashIndex + 1) % filteredCards.length;
+      showingAnswer = false;
+      renderFlashcard();
+    }
+
+    function flipCard() {
+      if (filteredCards.length === 0) return;
+      showingAnswer = !showingAnswer;
+      renderFlashcard();
+    }
+
+    function shuffleCards() {
+      filteredCards = shuffleArray(filteredCards);
+      flashIndex = 0;
+      showingAnswer = false;
+      renderFlashcard();
+    }
+
+    function resetCards() {
+      filteredCards = originalCards.slice();
+      flashIndex = 0;
+      showingAnswer = false;
+      renderFlashcard();
+    }
+
+    function setMode(mode) {
+      if (mode === "flash") {
+        flashPanel.classList.remove("hidden");
+        quizPanel.classList.add("hidden");
+        flashModeBtn.classList.add("active-mode");
+        quizModeBtn.classList.remove("active-mode");
+      } else {
+        quizPanel.classList.remove("hidden");
+        flashPanel.classList.add("hidden");
+        quizModeBtn.classList.add("active-mode");
+        flashModeBtn.classList.remove("active-mode");
+      }
+    }
+
+    function resetQuiz() {
+      quizDeck = [];
+      quizIndex = 0;
+      selectedAnswer = null;
+      answered = false;
+      score = 0;
+
+      quizTopic.textContent = "Topic";
+      quizMeta.textContent = "Press Start Quiz.";
+      quizQuestion.textContent = "Your question will appear here.";
+      quizOptions.innerHTML = "";
+      quizResult.className = "result";
+      quizResult.textContent = "";
+      quizSummary.className = "summary";
+      quizSummary.innerHTML = "";
+    }
+
+    function getDistractors(correctAnswer, topic) {
+      var sameTopic = [];
+      var allAnswers = [];
+      var i;
+
+      for (i = 0; i < cards.length; i++) {
+        if (cards[i].a !== correctAnswer) {
+          allAnswers.push(cards[i].a);
+          if (cards[i].topic === topic) {
+            sameTopic.push(cards[i].a);
+          }
+        }
+      }
+
+      sameTopic = uniqueArray(sameTopic);
+      allAnswers = uniqueArray(allAnswers);
+
+      var pool = sameTopic.length >= 3 ? sameTopic : allAnswers;
+      return shuffleArray(pool).slice(0, 3);
+    }
+
+    function startQuiz() {
+      var count = parseInt(quizCount.value, 10);
+      var source = shuffleArray(filteredCards);
+      var total = Math.min(count, source.length);
+      var i;
+
+      quizDeck = [];
+      for (i = 0; i < total; i++) {
+        var item = source[i];
+        var distractors = getDistractors(item.a, item.topic);
+        var options = distractors.slice();
+        options.push(item.a);
+        options = shuffleArray(uniqueArray(options));
+
+        while (options.length < 4) {
+          var extra = getDistractors(item.a, item.topic);
+          options = uniqueArray(options.concat(extra));
+        }
+
+        options = shuffleArray(options).slice(0, 4);
+
+        if (options.indexOf(item.a) === -1) {
+          options = item.a;
+          options = shuffleArray(options);
+        }
+
+        quizDeck.push({
+          topic: item.topic,
+          q: item.q,
+          a: item.a,
+          options: options
+        });
+      }
+
+      quizIndex = 0;
+      selectedAnswer = null;
+      answered = false;
+      score = 0;
+      quizSummary.className = "summary";
+      quizSummary.innerHTML = "";
+
+      if (quizDeck.length === 0) {
+        quizTopic.textContent = "No Topic";
+        quizMeta.textContent = "No quiz items available.";
+        quizQuestion.textContent = "No questions available.";
+        quizOptions.innerHTML = "";
+        return;
+      }
+
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      var item = quizDeck[quizIndex];
+      var i;
+
+      selectedAnswer = null;
+      answered = false;
+
+      quizTopic.textContent = item.topic;
+      quizMeta.textContent = "Question " + (quizIndex + 1) + " of " + quizDeck.length + " | Score: " + score;
+      quizQuestion.textContent = item.q;
+      quizOptions.innerHTML = "";
+      quizResult.className = "result";
+      quizResult.textContent = "";
+
+      for (i = 0; i < item.options.length; i++) {
+        (function(answerText) {
+          var btn = document.createElement("button");
+          btn.className = "option";
+          btn.type = "button";
+          btn.textContent = answerText;
+          btn.setAttribute("data-answer", answerText);
+
+          btn.onclick = function() {
+            if (answered) return;
+            selectedAnswer = answerText;
+
+            var allBtns = quizOptions.children;
+            var j;
+            for (j = 0; j < allBtns.length; j++) {
+              allBtns[j].classList.remove("selected");
+            }
+            btn.classList.add("selected");
+          };
+
+          quizOptions.appendChild(btn);
+        })(item.options[i]);
+      }
+    }
+
+    function submitAnswer() {
+      if (quizDeck.length === 0) return;
+      if (answered) return;
+
+      if (selectedAnswer === null) {
+        quizResult.className = "result show no";
+        quizResult.textContent = "Please select an answer first.";
+        return;
+      }
+
+      answered = true;
+      var item = quizDeck[quizIndex];
+      var btns = quizOptions.children;
+      var i;
+
+      for (i = 0; i < btns.length; i++) {
+        var ans = btns[i].getAttribute("data-answer");
+        if (ans === item.a) {
+          btns[i].classList.add("correct");
+        } else if (ans === selectedAnswer) {
+          btns[i].classList.add("wrong");
+        }
+      }
+
+      if (selectedAnswer === item.a) {
+        score++;
+        quizResult.className = "result show ok";
+        quizResult.textContent = "Correct!";
+      } else {
+        quizResult.className = "result show no";
+        quizResult.textContent = "Incorrect. Correct answer: " + item.a;
+      }
+
+      quizMeta.textContent = "Question " + (quizIndex + 1) + " of " + quizDeck.length + " | Score: " + score;
+    }
+
+    function nextQuestion() {
+      if (quizDeck.length === 0) return;
+
+      if (!answered) {
+        quizResult.className = "result show no";
+        quizResult.textContent = "Submit your answer before moving on.";
+        return;
+      }
+
+      quizIndex++;
+
+      if (quizIndex >= quizDeck.length) {
+        finishQuiz();
+      } else {
+        renderQuizQuestion();
+      }
+    }
+
+    function finishQuiz() {
+      var percent = Math.round((score / quizDeck.length) * 100);
+      var remark = "";
+
+      if (percent >= 90) {
+        remark = "Excellent recall.";
+      } else if (percent >= 75) {
+        remark = "Good job. Review weak areas once more.";
+      } else if (percent >= 50) {
+        remark = "Fair attempt. More repetition will help.";
+      } else {
+        remark = "Review the flashcards first, then retake the quiz.";
+      }
+
+      quizTopic.textContent = "Quiz Complete";
+      quizMeta.textContent = "Final Score: " + score + "/" + quizDeck.length;
+      quizQuestion.textContent = "You scored " + score + " out of " + quizDeck.length + ".";
+      quizOptions.innerHTML = "";
+      quizResult.className = "result";
+      quizResult.textContent = "";
+
+      quizSummary.className = "summary show";
+      quizSummary.innerHTML =
+        "<h3>Quiz Summary</h3>" +
+        "<p><strong>Score:</strong> " + score + " / " + quizDeck.length + "</p>" +
+        "<p><strong>Percentage:</strong> " + percent + "%</p>" +
+        "<p><strong>Feedback:</strong> " + remark + "</p>";
+    }
+
+    document.getElementById("prevBtn").onclick = prevCard;
+    document.getElementById("nextBtn").onclick = nextCard;
+    document.getElementById("flipBtn").onclick = flipCard;
+    document.getElementById("shuffleBtn").onclick = shuffleCards;
+    document.getElementById("resetBtn").onclick = resetCards;
+
+    document.getElementById("startQuizBtn").onclick = startQuiz;
+    document.getElementById("submitBtn").onclick = submitAnswer;
+    document.getElementById("nextQuestionBtn").onclick = nextQuestion;
+
+    flashModeBtn.onclick = function() { setMode("flash"); };
+    quizModeBtn.onclick = function() { setMode("quiz"); };
+    topicSelect.onchange = applyFilter;
+
+    document.addEventListener("keydown", function(e) {
+      if (!flashPanel.classList.contains("hidden")) {
+        if (e.key === "ArrowLeft") prevCard();
+        if (e.key === "ArrowRight") nextCard();
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          flipCard();
+        }
+      }
+    });
+
+    initTopics();
+    applyFilter();
+  </script>
+</body>
+</html>
